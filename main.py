@@ -30,7 +30,7 @@ __mysql_user__ = "cluser_eu01_user"
 __mysql_pass__ = "kP6hE3zE7aJ7nQ6i"
 
 
-__mongo_host__ = "mongodb://localhost:3307/"
+__mongo_host__ = "mongodb://localhost:27017/"
 __mongo_db__ = "cluster_eu01_mongo"
 __mongo_user__ = "cluster_eu01_user"
 # Disabled due to the same reason from above
