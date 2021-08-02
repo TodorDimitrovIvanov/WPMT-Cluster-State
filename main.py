@@ -140,7 +140,6 @@ class PostStateCompare(BaseModel):
 
 
 class PostStateSet(BaseModel):
-    client_id: str
     state_obj: dict
 
 
@@ -150,31 +149,43 @@ class Cluster:
     def user_state_get(client_id: str):
         db_conn = DB.connect()
         db_coll = db_conn['user_states']
-        db_command = {"client_id": client_id}
-        db_result = db_coll.find(db_command)
-        for item in db_result:
-            pprint(item)
+        db_data = {"client_id": client_id}
+        db_result = db_coll.find_one(db_data)
+        return db_result
+
 
     @staticmethod
     def user_state_compare(client_id: str, client_last_update: str):
         pass
 
     @staticmethod
-    def user_state_set(client_id: str, state_obj: dict):
-        pass
+    def user_state_set(state_obj: dict):
+        db_conn = DB.connect()
+        db_coll = db_conn['user_states']
+        db_data = state_obj
+        db_result = db_coll.insert_one(db_data)
+        print("State Set Result: ", db_result, "Type: ", type(db_result))
 
 
 @app.post("/state/get", status_code=200)
 def cluster_state_get(post_data: PostStateGet):
     post_data_dict = post_data.dict()
-    Cluster.user_state_get(post_data_dict['client_id'])
+    temp = Cluster.user_state_get(post_data_dict['client_id'])
+    for element in temp:
+        print("Result: ", element, "Type: ", type(element))
 
     # To be continued
 
 
 @app.post("/state/set", status_code=200)
 def cluster_state_set(post_data: PostStateSet):
-    print("Kurec1")
+    post_data_dict = post_data.dict()
+    temp = Cluster.user_state_set(post_data_dict['state_obj'])
+
+
+@app.get("/state/db_init", status_code=200)
+def mongo_db_init():
+    DB.init_db()
 
 
 @app.post("/state/compare", status_code=200)
