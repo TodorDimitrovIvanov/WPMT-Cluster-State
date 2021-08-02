@@ -18,7 +18,6 @@ __cluster_name__ = "cluster-eu01.wpmt.org"
 __cluster_url__ = "http://cluster-eu01.wpmt.org"
 __cluster_logger_url__ = "http://cluster-eu01.wpmt.org/log/save"
 __cluster_locale__ = "EU"
-__cluster_user_count__ = None
 
 __mysql_host__ = "localhost"
 __mysql_db__ = "cluster_eu01"
@@ -156,6 +155,14 @@ class Cluster:
         for item in db_result:
             pprint(item)
 
+    @staticmethod
+    def user_state_compare(client_id: str, client_last_update: str):
+        pass
+
+    @staticmethod
+    def user_state_set(client_id: str, state_obj: dict):
+        pass
+
 
 @app.post("/state/get", status_code=200)
 def cluster_state_get(post_data: PostStateGet):
@@ -165,19 +172,14 @@ def cluster_state_get(post_data: PostStateGet):
     # To be continued
 
 
-@staticmethod
-def cluster_state_compare(client_id: str, client_last_update: str):
-    pass
+@app.post("/state/set", status_code=200)
+def cluster_state_set(post_data: PostStateSet):
+    print("Kurec1")
 
 
-@staticmethod
-def cluster_state_set(client_id: str, state_obj: dict):
-
-
-    pass
-
-
-
+@app.post("/state/compare", status_code=200)
+def cluster_state_set(post_data: PostStateCompare):
+    print("Kurec2")
 
 
 if __name__ == "__main__":
