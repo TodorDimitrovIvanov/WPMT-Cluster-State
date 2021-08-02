@@ -12,11 +12,11 @@ import uvicorn
 
 app = FastAPI()
 
-__master_url__ = "https://master.wpmt.org"
+__master_url__ = "http://master.wpmt.org"
 
 __cluster_name__ = "cluster-eu01.wpmt.org"
-__cluster_url__ = "https://cluster-eu01.wpmt.org"
-__cluster_logger_url__ = "http://cluster-eu01.wpmt.tech/log/save"
+__cluster_url__ = "http://cluster-eu01.wpmt.org"
+__cluster_logger_url__ = "http://cluster-eu01.wpmt.org/log/save"
 __cluster_locale__ = "EU"
 __cluster_user_count__ = None
 
@@ -160,6 +160,8 @@ class Cluster:
 @app.post("/state/get", status_code=200)
 def cluster_state_get(post_data: PostStateGet):
     post_data_dict = post_data.dict()
+    Cluster.user_state_get(post_data_dict['client_id'])
+
     # To be continued
 
 
