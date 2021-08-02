@@ -172,11 +172,23 @@ class Cluster:
         cluster_state_last_update = datetime.datetime.strptime(temp, "%b-%d-%Y-%H:%M")
         client_state_last_update = datetime.datetime.strptime(client_state_obj['last_update'], "%b-%d-%Y-%H:%M")
         if cluster_state_last_update > client_state_last_update:
-            return "The Cluster DB is more recent than the Client DB"
+            state_obj = Cluster.user_state_get(client_state_obj['client_id'])
+            return {
+                "Response": "client-update",
+                "State": state_obj
+            }
         if cluster_state_last_update == client_state_last_update:
-            return "The Cluster and the Client DB are synced"
+            return {
+                "Response": "synced",
+                "State": client_state_obj
+            }
         else:
-            return "The Cluster DB is older than the Client DB"
+            Cluster.user_state_set(client_state_obj)
+            result = Cluster.user_state_get(client_state_obj['client_id'])
+            return {
+                "Response": "cluster-update",
+                "State": result
+            }
 
 
     @staticmethod
@@ -184,12 +196,15 @@ class Cluster:
         db_conn = DB.connect()
         db_coll = db_conn['user_states']
         db_data = state_obj
-        db_result = db_coll.insert_one(db_data)
+        # Here the "upsert" parameter tells mongo to create the document if no matches were found
+        # This is useful for using the function as an update and an insert command
+        db_result = db_coll.update({"client_id": state_obj['client_id']}, db_data, upsert=True)
         return db_result
 
 # -------------------------
 # END of Cluster section
 # -------------------------
+
 
 # -------------------------
 # START of FastAPI section
