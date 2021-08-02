@@ -148,6 +148,7 @@ class Cluster:
     @staticmethod
     def user_state_get(client_id: str):
         db_conn = DB.connect()
+        print("Client ID: ", client_id)
         db_coll = db_conn['user_states']
         db_data = {"client_id": client_id}
         db_result = db_coll.find_one(db_data)
@@ -171,9 +172,7 @@ class Cluster:
 def cluster_state_get(post_data: PostStateGet):
     post_data_dict = post_data.dict()
     temp = Cluster.user_state_get(post_data_dict['client_id'])
-    for element in temp:
-        print("Result: ", element, "Type: ", type(element))
-
+    print("Result: ", temp, "Type: ", type(temp))
     # To be continued
 
 
