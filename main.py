@@ -156,7 +156,10 @@ class Cluster:
         db_conn = DB.connect()
         db_coll = db_conn['user_states']
         db_data = {"client_id": client_id}
-        db_result = db_coll.find_one(db_data)
+        # Here we fetch the document but exclude the Mongo "_id" field
+        # Since it's causing an issue with the Starlette/FastAPI service
+        # Source: https://stackoverflow.com/a/64792159
+        db_result = db_coll.find_one(db_data, {'_id': 0})
         return db_result
 
 
@@ -198,7 +201,7 @@ class Cluster:
         db_data = state_obj
         # Here the "upsert" parameter tells mongo to create the document if no matches were found
         # This is useful for using the function as an update and an insert command
-        db_result = db_coll.update({"client_id": state_obj['client_id']}, db_data, upsert=True)
+        db_result = db_coll.update_one({"client_id": state_obj['client_id']}, db_data, upsert=True)
         return db_result
 
 # -------------------------
@@ -220,17 +223,19 @@ def cluster_state_get(post_data: PostStateGet):
     # wordpress_states - this should contain nested dicts
     # backup_states - this should contain nested dicts
     # notification_states - this should contain nested dicts
-    return {
-        "Response": "Success",
-        "Message": result
-    }
+    return result
 
 
+# Not sure if this endpoint should even exist.
+# This is because the WPMT Client should automatically sync every n minutes with the '/state/compare' endpoint
 @app.post("/state/set", status_code=200)
 def cluster_state_set(post_data: PostStateSet):
     post_data_dict = post_data.dict()
     temp = Cluster.user_state_set(post_data_dict['state_obj'])
-    print("Temp: ", temp, "Type: ", type(temp))
+    return {
+        "Response": "Success",
+        "Message": "Set the provided state"
+    }
 
 
 @app.get("/state/db_init", status_code=200)
@@ -239,17 +244,14 @@ def mongo_db_init():
 
 
 @app.post("/state/compare", status_code=200)
-def cluster_state_set(post_data: PostStateCompare):
+def cluster_state_compare(post_data: PostStateCompare):
     post_data_dict = post_data.dict()
     result = Cluster.user_state_compare(post_data_dict['state_obj'])
-    return {
-        "Response": "Success",
-        "Message": result
-    }
-
+    return result
 # -------------------------
 # END of FastAPI section
 # -------------------------
+
 
 if __name__ == "__main__":
     # Here we must use 127.0.0.1 as K8s doesn't seem to recognize localhost ....
