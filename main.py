@@ -171,8 +171,10 @@ class Cluster:
         temp = db_result['last_update']
         cluster_state_last_update = datetime.datetime.strptime(temp, "%b-%d-%Y-%H:%M")
         client_state_last_update = datetime.datetime.strptime(client_state_obj['last_update'], "%b-%d-%Y-%H:%M")
-        if cluster_state_last_update < client_state_last_update:
+        if cluster_state_last_update > client_state_last_update:
             return "The Cluster DB is more recent than the Client DB"
+        if cluster_state_last_update == client_state_last_update:
+            return "The Cluster and the Client DB are synced"
         else:
             return "The Cluster DB is older than the Client DB"
 
