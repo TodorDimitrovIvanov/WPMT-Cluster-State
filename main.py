@@ -4,7 +4,6 @@ import pymongo.errors
 from pydantic import BaseModel
 import datetime
 from pymongo import MongoClient
-from pprint import pprint
 import requests
 import json
 from fastapi import FastAPI, HTTPException
@@ -58,6 +57,9 @@ def send_to_logger(err_type, message, client_id="None", client_email="None"):
     send_request = requests.post(__cluster_logger_url__, data=json.dumps(body), headers=__app_headers__)
 
 
+# -------------------
+# START of DB section
+# -------------------
 class DB:
 
     @staticmethod
@@ -121,34 +123,37 @@ class DB:
                 "Response": "Error",
                 "Message": message
             }
+# -------------------
+# START of DB section
+# -------------------
 
 
-
-    @staticmethod
-    def execute_command(database_obj, command: str, data: Optional[list] = []):
-        db_client = DB.connect()
-
-
-
+# -------------------------
+# START of Models section
+# -------------------------
 class PostStateGet(BaseModel):
     client_id: str
 
 
 class PostStateCompare(BaseModel):
-    client_id: str
-    client_last_update: str
+    state_obj: dict
 
 
 class PostStateSet(BaseModel):
     state_obj: dict
+# -------------------------
+# END of Models section
+# -------------------------
 
 
+# -------------------------
+# START of Cluster section
+# -------------------------
 class Cluster:
 
     @staticmethod
     def user_state_get(client_id: str):
         db_conn = DB.connect()
-        print("Client ID: ", client_id)
         db_coll = db_conn['user_states']
         db_data = {"client_id": client_id}
         db_result = db_coll.find_one(db_data)
@@ -156,8 +161,21 @@ class Cluster:
 
 
     @staticmethod
-    def user_state_compare(client_id: str, client_last_update: str):
-        pass
+    def user_state_compare(client_state_obj):
+        # Source: https://stackoverflow.com/a/20365917
+        db_conn = DB.connect()
+        db_coll = db_conn['user_states']
+        db_data = {"client_id": client_state_obj['client_id']}
+        db_result = db_coll.find_one(db_data)
+
+        temp = db_result['last_update']
+        cluster_state_last_update = datetime.datetime.strptime(temp, "%b-%d-%Y-%H:%M")
+        client_state_last_update = datetime.datetime.strptime(client_state_obj['last_update'], "%b-%d-%Y-%H:%M")
+        if cluster_state_last_update < client_state_last_update:
+            return "The Cluster DB is more recent than the Client DB"
+        else:
+            return "The Cluster DB is older than the Client DB"
+
 
     @staticmethod
     def user_state_set(state_obj: dict):
@@ -165,21 +183,37 @@ class Cluster:
         db_coll = db_conn['user_states']
         db_data = state_obj
         db_result = db_coll.insert_one(db_data)
-        print("State Set Result: ", db_result, "Type: ", type(db_result))
+        return db_result
 
+# -------------------------
+# END of Cluster section
+# -------------------------
 
+# -------------------------
+# START of FastAPI section
+# -------------------------
 @app.post("/state/get", status_code=200)
 def cluster_state_get(post_data: PostStateGet):
     post_data_dict = post_data.dict()
-    temp = Cluster.user_state_get(post_data_dict['client_id'])
-    print("Result: ", temp, "Type: ", type(temp))
-    # To be continued
+    result = Cluster.user_state_get(post_data_dict['client_id'])
+    # Here the function returns a dict with nested dicts within it. The keys of the dict are:
+    # client_id
+    # last_update
+    # website_states - this should contain nested dicts
+    # wordpress_states - this should contain nested dicts
+    # backup_states - this should contain nested dicts
+    # notification_states - this should contain nested dicts
+    return {
+        "Response": "Success",
+        "Message": result
+    }
 
 
 @app.post("/state/set", status_code=200)
 def cluster_state_set(post_data: PostStateSet):
     post_data_dict = post_data.dict()
     temp = Cluster.user_state_set(post_data_dict['state_obj'])
+    print("Temp: ", temp, "Type: ", type(temp))
 
 
 @app.get("/state/db_init", status_code=200)
@@ -189,8 +223,16 @@ def mongo_db_init():
 
 @app.post("/state/compare", status_code=200)
 def cluster_state_set(post_data: PostStateCompare):
-    print("Kurec2")
+    post_data_dict = post_data.dict()
+    result = Cluster.user_state_compare(post_data_dict['state_obj'])
+    return {
+        "Response": "Success",
+        "Message": result
+    }
 
+# -------------------------
+# END of FastAPI section
+# -------------------------
 
 if __name__ == "__main__":
     # Here we must use 127.0.0.1 as K8s doesn't seem to recognize localhost ....
