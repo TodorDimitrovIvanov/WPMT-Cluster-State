@@ -156,11 +156,17 @@ class Cluster:
         db_conn = DB.connect()
         db_coll = db_conn['user_states']
         db_data = {"client_id": client_id}
-        # Here we fetch the document but exclude the Mongo "_id" field
+        # Here we fetch the document but exclude the Mongo "_id" key
         # Since it's causing an issue with the Starlette/FastAPI service
         # Source: https://stackoverflow.com/a/64792159
         db_result = db_coll.find_one(db_data, {'_id': 0})
-        return db_result
+        if db_result is None:
+            return {
+                "Response": "Error",
+                "Message": "Not Found"
+            }
+        else:
+            return db_result
 
 
     @staticmethod
@@ -170,7 +176,8 @@ class Cluster:
         db_coll = db_conn['user_states']
         db_data = {"client_id": client_state_obj['client_id']}
         db_result = db_coll.find_one(db_data)
-
+        # Here we'll compare the last update on the Client and the Cluster
+        # Source: https://stackoverflow.com/a/20365903
         temp = db_result['last_update']
         cluster_state_last_update = datetime.datetime.strptime(temp, "%b-%d-%Y-%H:%M")
         client_state_last_update = datetime.datetime.strptime(client_state_obj['last_update'], "%b-%d-%Y-%H:%M")
@@ -202,7 +209,13 @@ class Cluster:
         # Here the "upsert" parameter tells mongo to create the document if no matches were found
         # This is useful for using the function as an update and an insert command
         db_result = db_coll.update_one({"client_id": state_obj['client_id']}, db_data, upsert=True)
-        return db_result
+        if db_result is None:
+            return {
+                "Response": "Success",
+                "Message": "Successfully set the state."
+            }
+        else:
+            return db_result
 
 # -------------------------
 # END of Cluster section
