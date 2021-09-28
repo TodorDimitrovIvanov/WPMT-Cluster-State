@@ -247,12 +247,14 @@ def cluster_state_set(post_data: PostStateSet):
     temp = Cluster.user_state_set(post_data_dict['state_obj'])
     return {
         "Response": "Success",
-        "Message": "Set the provided state"
+        "Message": "State successfully updated",
+        "State": temp
     }
 
 
 @app.get("/state/db_init", status_code=200)
 def mongo_db_init():
+    # TODO: Add authorization for support user
     DB.init_db()
 
 
