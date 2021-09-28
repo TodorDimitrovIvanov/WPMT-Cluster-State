@@ -215,7 +215,7 @@ class Cluster:
         if db_result is None:
             return {
                 "Response": "Success",
-                "Message": "Successfully set the state."
+                "Message": "Successfully set the state for user [" + state_obj['client_id'] + "] "
             }
         else:
             return db_result
@@ -251,7 +251,7 @@ def cluster_state_set(post_data: PostStateSet):
     return {
         "Response": "Success",
         "Message": "State successfully updated",
-        "State": temp
+        "State": post_data_dict
     }
 
 
