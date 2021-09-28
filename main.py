@@ -208,7 +208,9 @@ class Cluster:
         db_data = state_obj
         # Here the "upsert" parameter tells mongo to create the document if no matches were found
         # This is useful for using the function as an update and an insert command
-        db_result = db_coll.update_one({"client_id": state_obj['client_id']}, db_data, upsert=True)
+        # Source: https://www.geeksforgeeks.org/python-mongodb-update_one/
+        # The $set operator specifies which data is to be updated
+        db_result = db_coll.update_one({"client_id": state_obj['client_id']}, {"$set": {"state": db_data}}, upsert=True)
         if db_result is None:
             return {
                 "Response": "Success",
