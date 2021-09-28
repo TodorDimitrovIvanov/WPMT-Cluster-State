@@ -211,7 +211,8 @@ class Cluster:
         # Source: https://www.geeksforgeeks.org/python-mongodb-update_one/
         # The $set operator specifies which data is to be updated
         #db_result = db_coll.update_one({"client_id": state_obj['client_id']}, {"$set": {"state": db_data}}, upsert=True)
-        db_result = db_coll.insert({"_id": state_obj['client_id'], "state": db_data})
+        #db_result = db_coll.insert({"_id": state_obj['client_id'], "state": db_data})
+        db_result = db_coll.update({"_id": state_obj['client_id']}, db_data, upsert=True)
         if db_result is None:
             return {
                 "Response": "Success",
