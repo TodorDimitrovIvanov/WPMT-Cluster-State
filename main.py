@@ -206,7 +206,7 @@ class Cluster:
         db_conn = DB.connect()
         db_coll = db_conn['user_states']
         db_data = state_obj
-        print("DEBUG: Cluster.user_state_set.DICT: ", state_obj)
+        # print("DEBUG: Cluster.user_state_set.DICT: ", state_obj)
         # Here the "upsert" parameter tells mongo to create the document if no matches were found
         # This is useful for using the function as an update and an insert command
         # Source: https://www.geeksforgeeks.org/python-mongodb-update_one/
@@ -217,10 +217,13 @@ class Cluster:
         if db_result is None:
             return {
                 "Response": "Success",
-                "Message": "Successfully set the state for user [" + state_obj['client_id'] + "] "
+                "Message": "Successfully set the state of user [" + state_obj['client_id'] + "] "
             }
         else:
-            return db_result
+            return {
+                "Response": "Failure",
+                "Message": "Failed to update the state of user [" + state_obj['client_id'] + "] "
+            }
 
 # -------------------------
 # END of Cluster section
