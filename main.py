@@ -13,13 +13,13 @@ app = FastAPI()
 
 __master_url__ = "http://master.wpmt.org"
 
-__cluster_name__ = "cluster-eu01.wpmt.org"
-__cluster_url__ = "http://cluster-eu01.wpmt.org"
-__cluster_logger_url__ = "http://cluster-eu01.wpmt.org/log/save"
+__cluster_name__ = "cluster-eu02.wpmt.org"
+__cluster_url__ = "http://cluster-eu02.wpmt.org"
+__cluster_logger_url__ = "http://cluster-eu02.wpmt.org/log/save"
 __cluster_locale__ = "EU"
 
 __mysql_host__ = "localhost"
-__mysql_db__ = "cluster_eu01"
+__mysql_db__ = "cluster_eu02"
 __mysql_user__ = "cluser_eu01_user"
 # Temporarily disabled:
 # The API should receive the password via system's environment variable
@@ -30,16 +30,16 @@ __mysql_pass__ = "kP6hE3zE7aJ7nQ6i"
 
 
 __mongo_host__ = "mongodb://localhost:27017/"
-__mongo_db__ = "cluster_eu01_mongo"
-__mongo_user__ = "cluster_eu01_user"
+__mongo_db__ = "cluster_eu02_mongo"
+__mongo_user__ = "cluster_eu02_user"
 # Disabled due to the same reason from above
 # __mongo_pass__ = environ['MONGO_USER_PASSWORD']
 __mongo_pass__ = "kP6hE3zE7aJ7nQ6i"
 
 __app_headers__ = {
-    'Host': 'cluster-eu01.wpmt.org',
+    'Host': 'cluster-eu02.wpmt.org',
     'User-Agent': 'WPMT-Auth/1.0',
-    'Referer': 'http://cluster-eu01.wpmt.org/user',
+    'Referer': 'http://cluster-eu02.wpmt.org/user',
     'Content-Type': 'application/json'
 }
 
